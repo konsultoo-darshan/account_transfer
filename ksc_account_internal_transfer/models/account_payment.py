@@ -102,22 +102,25 @@ class AccountPayment(models.Model):
         return action
 
     def action_post(self):
-        move = self.env['account.move'].search(
-            [('payment_id', '=', self.id), ('state', '=', 'draft'), ('id', '!=', self.move_id.id)])
-        move.action_post()
+    	for rec in self:
+		move = self.env['account.move'].search(
+		    [('payment_id', '=', rec.id), ('state', '=', 'draft'), ('id', '!=', rec.move_id.id)])
+		move.action_post()
         res = super(AccountPayment, self).action_post()
-        if self.payment_type == 'transfer':
-            self.with_context(skip_account_move_synchronization=True).write({'destination_account_id':self.journal_id.company_id.transfer_account_id})
-            accounts = list(move.line_ids.account_id + self.move_id.line_ids.account_id)
-            reconcile_account = list([x for x in accounts if accounts.count(x) > 1])
-            move_lines = move.line_ids + self.move_id.line_ids
-            reconcile_line = move_lines.filtered(lambda line: line.account_id == reconcile_account[0])
-            reconcile_line.reconcile()
+        for rec in self:
+		if rec.payment_type == 'transfer':
+		    rec.with_context(skip_account_move_synchronization=True).write({'destination_account_id': rec.journal_id.company_id.transfer_account_id})
+		    accounts = list(move.line_ids.account_id + rec.move_id.line_ids.account_id)
+		    reconcile_account = list([x for x in accounts if accounts.count(x) > 1])
+		    move_lines = move.line_ids + rec.move_id.line_ids
+		    reconcile_line = move_lines.filtered(lambda line: line.account_id == reconcile_account[0])
+		    reconcile_line.reconcile()
         return res
 
     def action_draft(self):
-        self.env['account.move'].search(
-            [('payment_id', '=', self.id), ('state', '=', 'posted'), ('id', '!=', self.move_id.id)]).button_draft()
+    	for rec in self:
+		self.env['account.move'].search(
+		    [('payment_id', '=', rec.id), ('state', '=', 'posted'), ('id', '!=', rec.move_id.id)]).button_draft()
         return super(AccountPayment, self).action_draft()
 
     def _seek_for_lines(self):
