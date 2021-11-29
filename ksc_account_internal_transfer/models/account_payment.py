@@ -105,6 +105,7 @@ class AccountPayment(models.Model):
     	for rec in self:
 		move = self.env['account.move'].search([('payment_id', '=', rec.id), ('state', '=', 'draft'), ('id', '!=', rec.move_id.id)])
 		move.action_post()
+		
         res = super(AccountPayment, self).action_post()
         for rec in self:
 		if rec.payment_type == 'transfer':
