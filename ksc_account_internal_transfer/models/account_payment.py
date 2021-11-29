@@ -232,9 +232,9 @@ class AccountPayment(models.Model):
                     'destination_account_id': counterpart_lines.account_id.id,
                     'partner_id': liquidity_lines.partner_id.id,
                 })
-                if liquidity_amount > 0.0 and self.payment_type != 'transfer':
+                if liquidity_amount > 0.0 and pay.payment_type != 'transfer':
                     payment_vals_to_write.update({'payment_type': 'inbound'})
-                elif liquidity_amount < 0.0 and self.payment_type != 'transfer':
+                elif liquidity_amount < 0.0 and pay.payment_type != 'transfer':
                     payment_vals_to_write.update({'payment_type': 'outbound'})
 
             move.write(move._cleanup_write_orm_values(move, move_vals_to_write))
