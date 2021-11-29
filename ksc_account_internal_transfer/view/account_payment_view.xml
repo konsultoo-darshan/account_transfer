@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_payment_form_internal_transfer" model="ir.ui.view">
+        <field name="name">account.payment.form.internal.transfer</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='journal_id']" position="after">
+                <field name="destination_journal_id"
+                       attrs="{'required': [('payment_type', '=', 'transfer')], 'invisible': [('payment_type', '!=', 'transfer')]}"/>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="attrs">{'invisible': [('payment_type', '==', 'transfer')]} </attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_bank_id']" position="attributes">
+                <attribute name="attrs">{'invisible': [('payment_type', '==', 'transfer')]} </attribute>
+            </xpath>
+            <xpath expr="//field[@name='move_id']" position="attributes">
+                <attribute name="attrs">{'invisible': [('payment_type', '==', 'transfer')]} </attribute>
+            </xpath>
+            <xpath expr="//group[@name='group1']//field[@name='is_internal_transfer']" position="attributes">
+                <attribute name="attrs">{'invisible': [('payment_type', '==', 'transfer')]} </attribute>
+            </xpath>
+            <xpath expr="//button[@name='button_open_invoices']" position="after">
+                <button name="action_view_journal_entries" string="Journal Entries" type="object" class="oe_stat_button"
+                        icon="fa-pencil-square-o" attrs="{'invisible': [('payment_type', '!=', 'transfer'),('state','!=','posted')]}"/>
+                <button name="action_view_journal_items" string="Journal Items" type="object" class="oe_stat_button"
+                        icon="fa-bars" attrs="{'invisible': [('payment_type', '!=', 'transfer'),('state','!=','posted')]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
