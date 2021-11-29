@@ -103,8 +103,7 @@ class AccountPayment(models.Model):
 
     def action_post(self):
     	for rec in self:
-		move = self.env['account.move'].search(
-		    [('payment_id', '=', rec.id), ('state', '=', 'draft'), ('id', '!=', rec.move_id.id)])
+		move = self.env['account.move'].search([('payment_id', '=', rec.id), ('state', '=', 'draft'), ('id', '!=', rec.move_id.id)])
 		move.action_post()
         res = super(AccountPayment, self).action_post()
         for rec in self:
@@ -120,7 +119,7 @@ class AccountPayment(models.Model):
     def action_draft(self):
     	for rec in self:
 		self.env['account.move'].search(
-		    [('payment_id', '=', rec.id), ('state', '=', 'posted'), ('id', '!=', rec.move_id.id)]).button_draft()
+			[('payment_id', '=', rec.id), ('state', '=', 'posted'), ('id', '!=', rec.move_id.id)]).button_draft()
         return super(AccountPayment, self).action_draft()
 
     def _seek_for_lines(self):
