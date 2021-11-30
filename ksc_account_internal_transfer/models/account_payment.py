@@ -12,6 +12,18 @@ class AccountPayment(models.Model):
     destination_journal_id = fields.Many2one('account.journal', string='Transfer To',
                                              domain="[('type', 'in', ('bank', 'cash'))]", readonly=True,
                                              states={'draft': [('readonly', False)]})
+    payment_type_mode = fields.Selection([('outbound', 'Send Money'), ('inbound', 'Receive Money')], string="Payment Type")
+
+    @api.model
+    def default_get(self, default_fields):
+        res = super().default_get(default_fields)
+        if res.get('payment_type') != 'transfer':
+            res['payment_type_mode'] = res.get('payment_type')
+        return res
+
+    @api.onchange('payment_type_mode')
+    def set_payment_type(self):
+        self.payment_type = self.payment_type_mode
 
     @api.model
     def create(self, vals):
@@ -144,7 +156,8 @@ class AccountPayment(models.Model):
                     self.journal_id.payment_credit_account_id,
             ):
                 liquidity_lines += line
-            elif line.account_id.internal_type in ('receivable', 'payable', 'other') or line.partner_id == line.company_id.partner_id:
+            elif line.account_id.internal_type in (
+            'receivable', 'payable', 'other') or line.partner_id == line.company_id.partner_id:
                 counterpart_lines += line
             else:
                 writeoff_lines += line
@@ -240,3 +253,18 @@ class AccountPayment(models.Model):
             move.write(move._cleanup_write_orm_values(move, move_vals_to_write))
             pay.write(move._cleanup_write_orm_values(pay, payment_vals_to_write))
 
+
+class account_journal(models.Model):
+    _inherit = "account.journal"
+    def open_transfer_money(self):
+        super(account_journal, self).open_transfer_money()
+        action = self.open_payments_action('transfer')
+        action['context'].update({'internal_transfer': True,
+                               'default_payment_type': 'transfer'})
+        return action
+
+    def create_internal_transfer(self):
+        res = super(account_journal, self).create_internal_transfer()
+        res['context'].update({'internal_transfer': True,
+                               'default_payment_type': 'transfer'})
+        return res
